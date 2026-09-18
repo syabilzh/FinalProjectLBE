@@ -1,0 +1,14 @@
+# Binary Go & Executable
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+main
+
+# Environment & Sensitive Data
+.env
+
+# VS Code & IDE
+.vscode/
+.idea/
