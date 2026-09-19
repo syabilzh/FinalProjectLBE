@@ -1,8 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
+// Structure data dari API Go/PostgreSQL
+interface BackendBroadcast {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  tags: string;
+  author: string;
+  author_email: string;
+  cta_type: string;
+  cta_url: string;
+  clicks: number;
+  expiry_date: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Structure data untuk UI Frontend
 interface Broadcast {
   id: string;
   title: string;
@@ -12,7 +31,6 @@ interface Broadcast {
   author: string;
   timeAgo: string;
   expiryText: string;
-  expiryStatus: "urgent" | "normal" | "danger";
   imageUrl?: string;
   isCustomGradient?: boolean;
 }
@@ -20,101 +38,60 @@ interface Broadcast {
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Semua");
+  const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const broadcasts: Broadcast[] = [
-    {
-      id: "1",
-      title: "Open Recruitment Panitia Gerigi x UKM Expo 2026",
-      description:
-        "Dibuka kesempatan bagi mahasiswa ITS angkatan 2023-2025 untuk bergabung dalam kepanitiaan penyambutan mahasiswa baru dan pameran UKM terbesar di ITS...",
-      category: "Kepanitiaan",
-      tags: ["Public Relation", "Desain Grafis"],
-      author: "BEM ITS / DITMAWA",
-      timeAgo: "2 jam lalu",
-      expiryText: "Berakhir 2 hari lagi",
-      expiryStatus: "normal",
-      imageUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuC32h3dc2BIpHDyFhu4iYrulsjFOu1dp1K9aXCm3tDMh97y2hLQ9OeN9oezzOHuw9vH_mEDxrog9OaBGxoLEXRDPmmzeQaSxVYjjtIcKTVcgEaBTFY8Bz8SNFJ2S9yqNL8B7CADk3xREe8NbO1t_LT-Tze--Fm3h_TI-cI3-qzQvLcBhsgcYt8JfwgVJX2CxWxhvAL5F5RMn1mKmBx9_lXQytOgCX1-LLwQq7F9pB1nUhZsyiJyOOaB",
-    },
-    {
-      id: "2",
-      title:
-        "Mencari 1 Front-End Dev (Next.js) - Tim Gemastik Software Development 2026",
-      description:
-        "Tim divisi Software Development ITS sudah memiliki ide validasi matang & backend engineer. Butuh pengembang UI yang fasih Tailwind CSS dan integrasi API RESTful.",
-      category: "Lomba",
-      tags: ["Next.js", "Tailwind", "React"],
-      author: "Arya (Teknik Informatika '23)",
-      timeAgo: "Kemarin",
-      expiryText: "Berakhir 5 hari lagi",
-      expiryStatus: "normal",
-      imageUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuC17uE6qCaNjzmKqqNCz9giiLm0_pul26LWVCmQgY1OSINM58OqrJa6lJTv2Q_Kf3izP45ftNgIEcd0D3ZmutCW2BJo4hCaQMFWro1-L8lShy-KUPbLA0LWuxnWibLqGdbnoby0Yts2HASL21OyFtKOxgzGkPjmVDSe5XM1z6e1R3LKTnKPJESziN-n1-GNn4ygDvCQTr3PP4pGmxrskdPMugXayYxC2KXWSgJoW7Wjvw-jOuKF7qYD",
-    },
-    {
-      id: "3",
-      title:
-        "Dicari UI/UX Designer untuk Tugas Besar Interaksi Manusia & Komputer",
-      description:
-        "Kurang 1 anggota untuk riset usability testing & desain wireframe aplikasi perbaikan sistem logistik maritim Jawa Timur. Pengerjaan semi-intensif via Figma.",
-      category: "Tugas Besar",
-      tags: ["Figma", "User-Research"],
-      author: "Nabila (Sistem Informasi '24)",
-      timeAgo: "5 jam lalu",
-      expiryText: "Berakhir hari ini",
-      expiryStatus: "danger",
-      isCustomGradient: true,
-    },
-    {
-      id: "4",
-      title: "Sayembara Desain Merchandise Dies Natalis ITS ke-66",
-      description:
-        "Kompetisi terbuka bagi sivitas akademika untuk merancang identitas merchandise resmi Dies Natalis 66 ITS. Total hadiah apresiasi senilai 15 Juta Rupiah.",
-      category: "Lomba",
-      tags: ["Desain Grafis", "Branding"],
-      author: "Biro Komunikasi Publik ITS",
-      timeAgo: "3 hari lalu",
-      expiryText: "Berakhir 8 hari lagi",
-      expiryStatus: "normal",
-      imageUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuApBzJbI0TS8yF8fKirC_HxxoNZwlzbp5YT-vZAWpK1mKjvdxU8xZajPbrvmQXnaZ6PdUvLq1nfcEcXl9bpShbjx3YK8iyXNdrJB4lCfgwUzpGVSpmc4cOvgxRYTcpsLQRQtaHyarY5L9JlMSUZ4jKOzVB1e8JnK8b2tzmWnFKZIfl5xNpNs4l8HYgSs10KX3WJ2kEsAk7JHOP0Fa3OdUHNOMHDHxwSHmSOkvC252SG8oGVQnlwevTq",
-    },
-    {
-      id: "5",
-      title: "Proyek Website Katalog UKM Paduan Suara ITS",
-      description:
-        "Dibutuhkan freelancer mahasiswa untuk membangun landing page profil dan media archive kompetisi internasional PSM ITS. Terdapat honorarium proyek & sertifikat.",
-      category: "Proyek / Freelance",
-      tags: ["Web Dev", "UI/UX"],
-      author: "UKM PSM ITS",
-      timeAgo: "4 hari lalu",
-      expiryText: "Berakhir 12 hari lagi",
-      expiryStatus: "normal",
-      imageUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAJZrUfGFILKrKqgfP5u-ukcIBXxHCiIBZKAieD-9KShcBsa6YPlqu-U_aC7iYv2-cgLEvzA0ZtKH7GkdCWiTB4ekCXC3tx8OeZmyRxxoRFPD5C5WzodVYPpqx-884MDOo-4Oc0S85hW7QxF2-8mY3s_VE10e1IlWv24I3p_jFdccmoJi8RgBU6iKV_jR6dPkQJmH3PvEObEtIflCuiO-EGxY0iPnebO86_xDKXt5WWAxRIrnzz-2oI",
-    },
-    {
-      id: "6",
-      title: "Open Recruitment Staff Divisi Sponsorship Schematics 2026",
-      description:
-        "Siap mengasah negosiasi dan relasi korporat teknologi? Schematics membuka registrasi staff divisi sponsorship untuk penggalangan dana gelaran olimpiade & hackathon.",
-      category: "Kepanitiaan",
-      tags: ["Sponsorship", "Event Organizer"],
-      author: "Himpunan Mahasiswa Informatika",
-      timeAgo: "5 hari lalu",
-      expiryText: "Berakhir 4 hari lagi",
-      expiryStatus: "normal",
-      imageUrl:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDqY6iPy6sJl4sl5Owal7JBNeUkCFvmJ6IfJMLHCVFDEnJlY8BjsHB6Dy6ITk3tZSJMGWClHZOOsP3jdlHL9kK6pGN6WLSgx6ObFaOpaNO7ubrHg_HMWjzP1fUsmkQAVUh0uQWjUeq_XIjFWZYMC6JjoIa1qxi4UT11yeGe_5EJmhbMSS95hS7wMlUH6f6_DUba8uVYG9Ya9IQm8bpW4gvZRdXns2X9Wha8PukwlKmmCVkSzdZwuKOt",
-    },
-  ];
+  // Fetching data dari Backend Go
+  useEffect(() => {
+    async function fetchBroadcasts() {
+      try {
+        const res = await fetch("http://localhost:8080/api/broadcasts");
+        if (!res.ok) throw new Error("Gagal mengambil data");
+        const json = await res.json();
+
+        // Mapping format data dari Backend Go ke tampilan Frontend Next.js (Strict Type)
+        const mappedData: Broadcast[] = json.data.map((item: BackendBroadcast) => ({
+          id: String(item.id),
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          tags: item.tags ? item.tags.split(",") : [],
+          author: item.author,
+          timeAgo: new Date(item.created_at).toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+          }),
+          expiryText: `Berakhir: ${new Date(item.expiry_date).toLocaleDateString("id-ID")}`,
+          isCustomGradient: item.id % 2 === 0,
+        }));
+
+        setBroadcasts(mappedData);
+      } catch (err) {
+        console.error("Error fetching broadcasts:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchBroadcasts();
+  }, []);
+
+  // Filter pencarian dan kategori secara realtime
+  const filteredBroadcasts = broadcasts.filter((item) => {
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "Semua" || item.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const categories = [
-    { name: "Semua", count: 34 },
-    { name: "Kepanitiaan", count: 12 },
-    { name: "Lomba", count: 8 },
-    { name: "Tugas Besar", count: 9 },
-    { name: "Proyek / Freelance", count: 5 },
+    { name: "Semua", count: broadcasts.length },
+    { name: "Lomba", count: broadcasts.filter((b) => b.category === "Lomba").length },
+    { name: "Kepanitiaan", count: broadcasts.filter((b) => b.category === "Kepanitiaan").length },
+    { name: "Tugas Besar", count: broadcasts.filter((b) => b.category === "Tugas Besar").length },
+    { name: "Proyek / Freelance", count: broadcasts.filter((b) => b.category === "Proyek / Freelance").length },
   ];
 
   const tags = [
@@ -133,7 +110,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-3 group focus:outline-none">
-              <div className="w-9 h-9 rounded-lg bg-[#013880] text-white flex items-center justify-center font-bold text-lg tracking-tight shadow-sm group-hover:bg-[#0062a0] transition-colors">
+              <div className="w-9 h-9 rounded-lg bg-[#013880] text-white flex items-center justify-center font-bold text-lg tracking-tight shadow-xs group-hover:bg-[#0062a0] transition-colors">
                 <span className="text-[#00B4D8] font-extrabold">I</span>B
               </div>
               <div className="flex flex-col">
@@ -148,13 +125,13 @@ export default function Home() {
 
             <nav className="hidden md:flex items-center gap-6 h-16 pt-1">
               <Link
-                href="#"
+                href="/"
                 className="border-b-2 border-[#002356] text-[#002356] font-semibold text-sm pb-1 flex items-center gap-1.5"
               >
                 Feed
               </Link>
               <Link
-                href="#"
+                href="/dashboard"
                 className="text-[#475569] font-semibold text-sm hover:text-[#002356] transition-colors pb-1"
               >
                 Broadcast Saya
@@ -164,12 +141,12 @@ export default function Home() {
 
           <div className="flex items-center gap-3">
             <Link
-              href="create"
-              className="hidden sm:inline-flex items-center justify-center gap-2 bg-[#013880] text-white px-4 h-[42px] rounded-lg font-semibold text-sm hover:bg-[#0062a0] transition-colors shadow-sm"
+              href="/create"
+              className="hidden sm:inline-flex items-center justify-center gap-2 bg-[#013880] text-white px-4 h-10.5 rounded-lg font-semibold text-sm hover:bg-[#0062a0] transition-colors shadow-xs"
             >
               + Buat Broadcast
             </Link>
-            <div className="h-6 w-[1px] bg-[#E2E8F0] mx-1 hidden sm:block"></div>
+            <div className="h-6 w-px bg-[#E2E8F0] mx-1 hidden sm:block"></div>
             <div className="flex items-center gap-2 pl-1 border border-[#E2E8F0] rounded-full bg-[#F1F5F9] pr-3 py-1">
               <div className="w-7 h-7 rounded-full bg-[#013880] text-white flex items-center justify-center text-xs font-bold">
                 MR
@@ -188,7 +165,7 @@ export default function Home() {
       </header>
 
       {/* MAIN CANVAS */}
-      <main className="flex-grow max-w-7xl mx-auto w-full px-4 md:px-8 py-6">
+      <main className="grow max-w-7xl mx-auto w-full px-4 md:px-8 py-6">
         {/* HERO SECTION */}
         <section className="mb-8 rounded-xl bg-white border border-[#E2E8F0] p-6 md:p-8 relative overflow-hidden">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -207,19 +184,25 @@ export default function Home() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-3 min-w-[320px]">
               <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 flex flex-col">
-                <span className="text-xl font-bold text-[#002356]">34</span>
+                <span className="text-xl font-bold text-[#002356]">{broadcasts.length}</span>
                 <span className="text-xs text-[#475569] mt-0.5">Total Aktif</span>
               </div>
               <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 flex flex-col">
-                <span className="text-xl font-bold text-[#0062a0]">12</span>
+                <span className="text-xl font-bold text-[#0062a0]">
+                  {broadcasts.filter((b) => b.category === "Kepanitiaan").length}
+                </span>
                 <span className="text-xs text-[#475569] mt-0.5">Kepanitiaan</span>
               </div>
               <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 flex flex-col">
-                <span className="text-xl font-bold text-[#00B4D8]">8</span>
+                <span className="text-xl font-bold text-[#00B4D8]">
+                  {broadcasts.filter((b) => b.category === "Lomba").length}
+                </span>
                 <span className="text-xs text-[#475569] mt-0.5">Tim Lomba</span>
               </div>
               <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-3 flex flex-col">
-                <span className="text-xl font-bold text-[#dc9916]">14</span>
+                <span className="text-xl font-bold text-[#dc9916]">
+                  {broadcasts.filter((b) => b.category === "Tugas Besar").length}
+                </span>
                 <span className="text-xs text-[#475569] mt-0.5">Tugas Besar</span>
               </div>
             </div>
@@ -229,7 +212,7 @@ export default function Home() {
         {/* SEARCH & FILTERS */}
         <section className="space-y-4 mb-8">
           <div className="flex flex-col md:flex-row items-stretch gap-3">
-            <div className="relative flex-grow">
+            <div className="relative grow">
               <input
                 type="text"
                 value={searchQuery}
@@ -252,7 +235,7 @@ export default function Home() {
                 onClick={() => setSelectedCategory(cat.name)}
                 className={`px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-1.5 transition-colors whitespace-nowrap ${
                   selectedCategory === cat.name
-                    ? "bg-[#002356] text-white shadow-sm"
+                    ? "bg-[#002356] text-white shadow-xs"
                     : "bg-white border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9]"
                 }`}
               >
@@ -275,6 +258,7 @@ export default function Home() {
             {tags.map((tag) => (
               <button
                 key={tag}
+                onClick={() => setSearchQuery(tag.replace("#", ""))}
                 className="bg-white border border-[#E2E8F0] hover:border-[#0062a0] hover:text-[#0062a0] text-[#475569] rounded-full px-3 py-1 text-xs font-semibold transition-colors"
               >
                 {tag}
@@ -284,112 +268,100 @@ export default function Home() {
         </section>
 
         {/* FEED GRID */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {broadcasts.map((item) => (
-            <article
-              key={item.id}
-              className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden hover:shadow-md hover:border-[#0062a0]/40 transition-all flex flex-col justify-between"
-            >
-              <div>
-                {item.isCustomGradient ? (
-                  <div className="relative w-full aspect-video bg-gradient-to-br from-[#013880] via-[#0062a0] to-[#00B4D8] p-6 flex flex-col justify-between text-white">
-                    <div className="flex justify-between items-start">
-                      <span className="text-xs uppercase tracking-wider font-semibold opacity-90">
-                        Sistem Informasi ITS
-                      </span>
-                      <span className="bg-[#FEF2F2] border border-[#FECACA] text-[#B91C1C] font-semibold text-xs px-2.5 py-1 rounded-full">
-                        {item.expiryText}
-                      </span>
+        {loading ? (
+          <div className="text-center py-12 text-[#475569] font-medium">
+            Mengambil data dari server backend...
+          </div>
+        ) : filteredBroadcasts.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl border border-[#E2E8F0] text-[#475569]">
+            Tidak ada broadcast yang ditemukan.
+          </div>
+        ) : (
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {filteredBroadcasts.map((item) => (
+              <article
+                key={item.id}
+                className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden hover:shadow-md hover:border-[#0062a0]/40 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  {item.isCustomGradient ? (
+                    <div className="relative w-full aspect-video bg-linear-to-br from-[#013880] via-[#0062a0] to-[#00B4D8] p-6 flex flex-col justify-between text-white">
+                      <div className="flex justify-between items-start">
+                        <span className="text-xs uppercase tracking-wider font-semibold opacity-90">
+                          Institut Teknologi Sepuluh Nopember
+                        </span>
+                        <span className="bg-[#FEF2F2] border border-[#FECACA] text-[#B91C1C] font-semibold text-xs px-2.5 py-1 rounded-full">
+                          {item.expiryText}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-white leading-tight">
+                          {item.title}
+                        </p>
+                      </div>
+                      <div className="absolute bottom-3 left-3">
+                        <span className="bg-white/90 backdrop-blur text-[#002356] border border-[#E2E8F0] font-semibold text-xs px-2.5 py-1 rounded-md">
+                          {item.category}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-sm text-white leading-tight">
-                        Interaksi Manusia &amp; Komputer (Kelas B)
-                      </p>
+                  ) : (
+                    <div className="relative w-full aspect-video bg-[#F1F5F9] overflow-hidden p-6 flex flex-col justify-between border-b border-[#E2E8F0]">
+                      <div className="flex justify-between items-start">
+                        <span className="bg-[#FFFBEB] border border-[#FDE68A] text-[#B45309] font-semibold text-xs px-2.5 py-1 rounded-full">
+                          {item.expiryText}
+                        </span>
+                      </div>
+                      <div className="absolute bottom-3 left-3">
+                        <span className="bg-white/90 backdrop-blur text-[#002356] border border-[#E2E8F0] font-semibold text-xs px-2.5 py-1 rounded-md">
+                          {item.category}
+                        </span>
+                      </div>
                     </div>
-                    <div className="absolute bottom-3 left-3">
-                      <span className="bg-white/90 backdrop-blur text-[#002356] border border-[#E2E8F0] font-semibold text-xs px-2.5 py-1 rounded-md">
-                        {item.category}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative w-full aspect-video bg-[#F1F5F9] overflow-hidden">
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-3 right-3">
-                      <span className="bg-[#FFFBEB] border border-[#FDE68A] text-[#B45309] font-semibold text-xs px-2.5 py-1 rounded-full">
-                        {item.expiryText}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-3 left-3">
-                      <span className="bg-white/90 backdrop-blur text-[#002356] border border-[#E2E8F0] font-semibold text-xs px-2.5 py-1 rounded-md">
-                        {item.category}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                <div className="p-4">
-                  <h2 className="font-bold text-base text-[#0F172A] line-clamp-2 hover:text-[#0062a0] cursor-pointer transition-colors mb-2">
-                    {item.title}
-                  </h2>
-                  <p className="text-xs text-[#475569] line-clamp-2 mb-4 leading-relaxed">
-                    {item.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {item.tags.map((t) => (
-                      <span
-                        key={t}
-                        className="bg-[#F1F5F9] text-[#475569] rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                      >
-                        #{t}
-                      </span>
-                    ))}
+                  <div className="p-4">
+                    <Link href={`/broadcast/${item.id}`}>
+                      <h2 className="font-bold text-base text-[#0F172A] line-clamp-2 hover:text-[#0062a0] cursor-pointer transition-colors mb-2">
+                        {item.title}
+                      </h2>
+                    </Link>
+                    <p className="text-xs text-[#475569] line-clamp-2 mb-4 leading-relaxed">
+                      {item.description}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {item.tags.map((t) => (
+                        <span
+                          key={t}
+                          className="bg-[#F1F5F9] text-[#475569] rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                        >
+                          #{t.trim()}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="px-4 py-3 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-between mt-auto">
-                <span className="text-xs font-semibold text-[#475569] truncate">
-                  {item.author}
-                </span>
-                <span className="text-xs text-[#94A3B8] shrink-0">
-                  {item.timeAgo}
-                </span>
-              </div>
-            </article>
-          ))}
-        </section>
+                <div className="px-4 py-3 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-between mt-auto">
+                  <span className="text-xs font-semibold text-[#475569] truncate">
+                    {item.author}
+                  </span>
+                  <span className="text-xs text-[#94A3B8] shrink-0">
+                    {item.timeAgo}
+                  </span>
+                </div>
+              </article>
+            ))}
+          </section>
+        )}
 
         {/* PAGINATION */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-6 bg-white border border-[#E2E8F0] rounded-xl mb-12 shadow-xs">
           <div className="text-xs text-[#475569] flex items-center gap-2">
             <span>
-              Menampilkan <strong className="font-semibold text-[#0F172A]">1-6</strong> dari{" "}
-              <strong className="font-semibold text-[#0F172A]">34</strong> broadcast aktif
+              Menampilkan <strong className="font-semibold text-[#0F172A]">{filteredBroadcasts.length}</strong> dari{" "}
+              <strong className="font-semibold text-[#0F172A]">{broadcasts.length}</strong> broadcast aktif
             </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              disabled
-              className="px-3 py-1.5 rounded-lg border border-[#E2E8F0] text-[#94A3B8] bg-[#F1F5F9] cursor-not-allowed text-xs font-semibold"
-            >
-              Sebelumnya
-            </button>
-            <div className="flex items-center gap-1">
-              <button className="w-8 h-8 rounded-lg bg-[#002356] text-white text-xs font-bold">
-                1
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-[#E2E8F0] hover:bg-[#F1F5F9] text-[#475569] text-xs font-semibold">
-                2
-              </button>
-            </div>
-            <button className="px-3 py-1.5 rounded-lg border border-[#E2E8F0] hover:bg-[#F1F5F9] text-[#0F172A] text-xs font-semibold transition-colors">
-              Selanjutnya
-            </button>
           </div>
         </div>
       </main>
@@ -399,7 +371,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
             <p className="text-[#475569] text-xs">
-              © 2024 Institut Teknologi Sepuluh Nopember (ITS). Hak Cipta Dilindungi Undang-Undang.
+              © 2026 Institut Teknologi Sepuluh Nopember (ITS). Hak Cipta Dilindungi Undang-Undang.
             </p>
           </div>
           <div className="flex items-center gap-6 text-xs text-[#475569]">
