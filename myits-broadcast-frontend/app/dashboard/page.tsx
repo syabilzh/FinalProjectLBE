@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getBroadcasts, deleteBroadcast } from "../../src/services/api";
 
-interface BackendBroadcast {
+interface Broadcast {
   id: number;
   title: string;
   category: string;
@@ -13,106 +14,110 @@ interface BackendBroadcast {
 }
 
 export default function DashboardPage() {
-  const [broadcasts, setBroadcasts] = useState<BackendBroadcast[]>([]);
+  const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchMyBroadcasts() {
-      try {
-        const res = await fetch("http://localhost:8080/api/broadcasts");
-        if (!res.ok) throw new Error("Gagal mengambil data");
-        const json = await res.json();
-        // Menampilkan data broadcast
-        setBroadcasts(json.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+  const fetchMyBroadcasts = async () => {
+    try {
+      const data = await getBroadcasts();
+      setBroadcasts(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchMyBroadcasts();
   }, []);
 
-  const totalClicks = broadcasts.reduce((acc, curr) => acc + curr.clicks, 0);
+  const handleDelete = async (id: number, title: string) => {
+    const confirmed = window.confirm(`Apakah Anda yakin ingin menghapus broadcast "${title}"?`);
+    if (!confirmed) return;
+
+    try {
+      await deleteBroadcast(String(id));
+      setBroadcasts((prev) => prev.filter((item) => item.id !== id));
+      alert("Broadcast berhasil dihapus!");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menghapus broadcast!");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] p-6 max-w-6xl mx-auto font-sans">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#002356]">Dashboard Broadcast Saya</h1>
-          <p className="text-xs text-[#475569]">Kelola dan pantau performa broadcast yang telah kamu publikasikan.</p>
+          <Link href="/" className="text-sm font-semibold text-[#0062a0] hover:underline mb-2 inline-block">
+            &larr; Kembali ke Feed
+          </Link>
+          <h1 className="text-2xl font-bold text-[#002356]">Broadcast Saya</h1>
+          <p className="text-xs text-[#475569]">Kelola dan pantau performa siaran informasi yang pernah Anda buat.</p>
         </div>
         <Link
           href="/create"
-          className="bg-[#013880] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#0062a0] transition-colors"
+          className="px-4 py-2 bg-[#013880] text-white font-semibold text-sm rounded-lg hover:bg-[#0062a0] transition-colors"
         >
-          + Buat Broadcast Baru
+          + Buat Baru
         </Link>
       </div>
 
-      {/* STATS CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-xl border border-[#E2E8F0]">
-          <span className="text-xs text-[#475569] font-medium">Total Broadcast</span>
-          <p className="text-2xl font-bold text-[#002356] mt-1">{broadcasts.length}</p>
-        </div>
-        <div className="bg-white p-4 rounded-xl border border-[#E2E8F0]">
-          <span className="text-xs text-[#475569] font-medium">Total Interaksi / Klik</span>
-          <p className="text-2xl font-bold text-[#0062a0] mt-1">{totalClicks}</p>
-        </div>
-        <div className="bg-white p-4 rounded-xl border border-[#E2E8F0]">
-          <span className="text-xs text-[#475569] font-medium">Status Akun</span>
-          <p className="text-2xl font-bold text-[#047857] mt-1">Terverifikasi SSO</p>
-        </div>
-      </div>
-
-      {/* TABLE DATA */}
-      <div className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden">
-        <table className="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-xs text-[#475569]">
-              <th className="p-4 font-bold">Judul</th>
-              <th className="p-4 font-bold">Kategori</th>
-              <th className="p-4 font-bold">Total Klik</th>
-              <th className="p-4 font-bold">Tanggal Buat</th>
-              <th className="p-4 font-bold">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="p-4 text-center text-[#475569]">Memuat data...</td>
+      <div className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden shadow-xs">
+        {loading ? (
+          <div className="p-8 text-center text-[#475569]">Memuat data broadcast...</div>
+        ) : broadcasts.length === 0 ? (
+          <div className="p-8 text-center text-[#475569]">Belum ada broadcast yang dibuat.</div>
+        ) : (
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-xs font-semibold text-[#475569]">
+                <th className="p-4">Judul Broadcast</th>
+                <th className="p-4">Kategori</th>
+                <th className="p-4">Total Klik CTA</th>
+                <th className="p-4">Status</th>
+                <th className="p-4 text-right">Aksi</th>
               </tr>
-            ) : broadcasts.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="p-4 text-center text-[#475569]">Belum ada broadcast.</td>
-              </tr>
-            ) : (
-              broadcasts.map((item) => (
-                <tr key={item.id} className="border-b border-[#E2E8F0] hover:bg-[#F8FAFC]">
-                  <td className="p-4 font-semibold text-[#0F172A]">{item.title}</td>
+            </thead>
+            <tbody className="divide-y divide-[#E2E8F0] text-sm">
+              {broadcasts.map((item) => (
+                <tr key={item.id} className="hover:bg-[#F8FAFC]">
+                  <td className="p-4 font-semibold text-[#0F172A]">
+                    <Link href={`/broadcast/${item.id}`} className="hover:text-[#0062a0]">
+                      {item.title}
+                    </Link>
+                  </td>
                   <td className="p-4">
-                    <span className="px-2.5 py-1 bg-[#F1F5F9] text-[#475569] rounded-md text-xs font-semibold">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eff4ff] text-[#002356]">
                       {item.category}
                     </span>
                   </td>
-                  <td className="p-4 font-bold text-[#0062a0]">{item.clicks}</td>
-                  <td className="p-4 text-xs text-[#94A3B8]">
-                    {new Date(item.created_at).toLocaleDateString("id-ID")}
-                  </td>
+                  <td className="p-4 font-bold text-[#002356]">{item.clicks}</td>
                   <td className="p-4">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {item.status || "Aktif"}
+                    </span>
+                  </td>
+                  <td className="p-4 text-right space-x-3">
                     <Link
-                      href={`/broadcast/${item.id}`}
+                      href={`/broadcast/${item.id}/edit`}
                       className="text-xs font-bold text-[#0062a0] hover:underline"
                     >
-                      Lihat Detail
+                      Edit
                     </Link>
+                    <button
+                      onClick={() => handleDelete(item.id, item.title)}
+                      className="text-xs font-bold text-red-600 hover:underline cursor-pointer"
+                    >
+                      Hapus
+                    </button>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

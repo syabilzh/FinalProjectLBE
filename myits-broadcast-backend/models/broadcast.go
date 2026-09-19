@@ -1,25 +1,22 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "time"
 
 type Broadcast struct {
-	ID          uint           `json:"id" gorm:"primaryKey"`
-	Title       string         `json:"title" gorm:"type:varchar(100);not null"`
-	Description string         `json:"description" gorm:"type:text;not null"`
-	Category    string         `json:"category" gorm:"type:varchar(50);not null"`
-	Tags        string         `json:"tags" gorm:"type:text"`
-	Author      string         `json:"author" gorm:"type:varchar(100);not null"`
-	AuthorEmail string         `json:"author_email" gorm:"type:varchar(100);not null"`
-	CtaType     string         `json:"cta_type" gorm:"type:varchar(50);not null"`
-	CtaUrl      string         `json:"cta_url" gorm:"type:text;not null"`
-	Clicks      int            `json:"clicks" gorm:"default:0"`
-	ExpiryDate  time.Time      `json:"expiry_date" gorm:"not null"`
-	Status      string         `json:"status" gorm:"type:varchar(20);default:'Aktif'"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Category    string    `json:"category"`
+	Tags        string    `json:"tags"`
+	Author      string    `json:"author"`
+	AuthorEmail string    `json:"author_email"`
+	ImageURL    string    `json:"image_url"`
+	CTAType     string    `json:"cta_type"`
+	CTAURL      string    `json:"cta_url"`
+	Clicks      int       `gorm:"default:0" json:"clicks"`
+	ExpiryDays  int       `gorm:"-" json:"expiry_days"`
+	ExpiryDate  time.Time `json:"expiry_date"`
+	Status      string    `gorm:"default:'Aktif'" json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }

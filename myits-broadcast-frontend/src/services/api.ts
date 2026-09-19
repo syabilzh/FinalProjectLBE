@@ -7,9 +7,20 @@ export interface CreateBroadcastPayload {
   tags: string;
   author: string;
   author_email: string;
+  image_url?: string;
   cta_type: string;
   cta_url: string;
   expiry_days: number;
+}
+
+export interface UpdateBroadcastPayload {
+  title: string;
+  description: string;
+  category: string;
+  tags: string;
+  image_url?: string;
+  cta_type: string;
+  cta_url: string;
 }
 
 export async function getBroadcasts() {
@@ -26,5 +37,25 @@ export async function createBroadcast(data: CreateBroadcastPayload) {
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Gagal membuat broadcast");
+  return res.json();
+}
+
+// Fitur Edit (Update Broadcast)
+export async function updateBroadcast(id: string, data: UpdateBroadcastPayload) {
+  const res = await fetch(`${API_URL}/broadcasts/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Gagal memperbarui broadcast");
+  return res.json();
+}
+
+// Fitur Hapus (Delete Broadcast)
+export async function deleteBroadcast(id: string) {
+  const res = await fetch(`${API_URL}/broadcasts/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Gagal menghapus broadcast");
   return res.json();
 }

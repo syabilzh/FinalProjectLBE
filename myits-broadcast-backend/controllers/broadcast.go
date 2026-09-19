@@ -64,6 +64,55 @@ func CreateBroadcast(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"data": input})
 }
 
+// UpdateBroadcast godoc
+// @Summary Update broadcast by ID
+// @Description Update an existing broadcast record in database
+// @Tags Broadcasts
+// @Accept json
+// @Produce json
+// @Param id path int true "Broadcast ID"
+// @Param broadcast body models.Broadcast true "Updated Broadcast Data"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /broadcasts/{id} [put]
+func UpdateBroadcast(c *gin.Context) {
+	var broadcast models.Broadcast
+	id := c.Param("id")
+
+	if err := config.DB.First(&broadcast, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Broadcast tidak ditemukan"})
+		return
+	}
+
+	var input struct {
+		Title       string `json:"title"`
+		Description string `json:"description"`
+		Category    string `json:"category"`
+		Tags        string `json:"tags"`
+		ImageURL    string `json:"image_url"`
+		CTAType     string `json:"cta_type"`
+		CTAURL      string `json:"cta_url"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	config.DB.Model(&broadcast).Updates(map[string]interface{}{
+		"title":       input.Title,
+		"description": input.Description,
+		"category":    input.Category,
+		"tags":        input.Tags,
+		"image_url":   input.ImageURL,
+		"cta_type":    input.CTAType,
+		"cta_url":     input.CTAURL,
+	})
+
+	c.JSON(http.StatusOK, gin.H{"message": "Broadcast berhasil diperbarui", "data": broadcast})
+}
+
 // TrackClick godoc
 // @Summary Increment click count
 // @Description Increment the CTA click count for a specific broadcast

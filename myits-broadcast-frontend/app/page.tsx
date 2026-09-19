@@ -12,6 +12,7 @@ interface BackendBroadcast {
   tags: string;
   author: string;
   author_email: string;
+  image_url?: string; // Field thumbnail baru dari Backend
   cta_type: string;
   cta_url: string;
   clicks: number;
@@ -57,6 +58,7 @@ export default function Home() {
           category: item.category,
           tags: item.tags ? item.tags.split(",") : [],
           author: item.author,
+          imageUrl: item.image_url, // Menerima URL Gambar dari Backend
           timeAgo: new Date(item.created_at).toLocaleDateString("id-ID", {
             day: "numeric",
             month: "short",
@@ -281,11 +283,30 @@ export default function Home() {
             {filteredBroadcasts.map((item) => (
               <article
                 key={item.id}
-                className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden hover:shadow-md hover:border-[#0062a0]/40 transition-all flex flex-col justify-between"
+                className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden hover:shadow-md hover:border-[#0062a0]/40 transition-all flex flex-col justify-between group"
               >
                 <div>
-                  {item.isCustomGradient ? (
-                    <div className="relative w-full aspect-video bg-linear-to-br from-[#013880] via-[#0062a0] to-[#00B4D8] p-6 flex flex-col justify-between text-white">
+                  {/* CARD HEADER / THUMBNAIL (DI-UPDATE DI SINI) */}
+                  {item.imageUrl ? (
+                    <div className="relative w-full aspect-video overflow-hidden bg-[#F1F5F9] border-b border-[#E2E8F0]">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-3 right-3">
+                        <span className="bg-white/90 backdrop-blur border border-[#FECACA] text-[#B91C1C] font-semibold text-xs px-2.5 py-1 rounded-full shadow-xs">
+                          {item.expiryText}
+                        </span>
+                      </div>
+                      <div className="absolute bottom-3 left-3">
+                        <span className="bg-white/90 backdrop-blur text-[#002356] border border-[#E2E8F0] font-semibold text-xs px-2.5 py-1 rounded-md shadow-xs">
+                          {item.category}
+                        </span>
+                      </div>
+                    </div>
+                  ) : item.isCustomGradient ? (
+                    <div className="relative w-full aspect-video bg-gradient-to-br from-[#013880] via-[#0062a0] to-[#00B4D8] p-6 flex flex-col justify-between text-white">
                       <div className="flex justify-between items-start">
                         <span className="text-xs uppercase tracking-wider font-semibold opacity-90">
                           Institut Teknologi Sepuluh Nopember

@@ -46,6 +46,7 @@ func main() {
 		api.GET("/broadcasts", controllers.GetBroadcasts)
 		api.GET("/broadcasts/:id", controllers.GetBroadcastByID)
 		api.POST("/broadcasts", controllers.CreateBroadcast)
+		api.PUT("/broadcasts/:id", controllers.UpdateBroadcast) // <-- DITAMBAHKAN DI SINI
 		api.DELETE("/broadcasts/:id", controllers.DeleteBroadcast)
 		api.POST("/broadcasts/:id/click", controllers.TrackClick)
 	}

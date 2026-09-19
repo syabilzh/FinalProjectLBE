@@ -217,8 +217,15 @@ const docTemplate = `{
                 "expiry_date": {
                     "type": "string"
                 },
+                "expiry_days": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
+                },
+                "image_url": {
+                    "description": "\u003c--- Field Baru",
+                    "type": "string"
                 },
                 "status": {
                     "type": "string"

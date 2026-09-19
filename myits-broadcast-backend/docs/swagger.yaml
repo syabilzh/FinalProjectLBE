@@ -20,8 +20,13 @@ definitions:
         type: string
       expiry_date:
         type: string
+      expiry_days:
+        type: integer
       id:
         type: integer
+      image_url:
+        description: <--- Field Baru
+        type: string
       status:
         type: string
       tags:
