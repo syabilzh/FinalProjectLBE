@@ -1,0 +1,156 @@
+basePath: /api
+definitions:
+  models.Broadcast:
+    properties:
+      author:
+        type: string
+      author_email:
+        type: string
+      category:
+        type: string
+      clicks:
+        type: integer
+      created_at:
+        type: string
+      cta_type:
+        type: string
+      cta_url:
+        type: string
+      description:
+        type: string
+      expiry_date:
+        type: string
+      id:
+        type: integer
+      status:
+        type: string
+      tags:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API Documentation for myITS Broadcast Fullstack Platform.
+  title: myITS Broadcast API
+  version: "1.0"
+paths:
+  /broadcasts:
+    get:
+      description: Fetch all broadcast records from database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all active broadcasts
+      tags:
+      - Broadcasts
+    post:
+      consumes:
+      - application/json
+      description: Create a new broadcast entry in the system
+      parameters:
+      - description: Broadcast Data
+        in: body
+        name: broadcast
+        required: true
+        schema:
+          $ref: '#/definitions/models.Broadcast'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new broadcast
+      tags:
+      - Broadcasts
+  /broadcasts/{id}:
+    delete:
+      description: Remove a broadcast record from database
+      parameters:
+      - description: Broadcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete broadcast by ID
+      tags:
+      - Broadcasts
+    get:
+      description: Fetch a single broadcast record by its primary key
+      parameters:
+      - description: Broadcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get broadcast by ID
+      tags:
+      - Broadcasts
+  /broadcasts/{id}/click:
+    post:
+      description: Increment the CTA click count for a specific broadcast
+      parameters:
+      - description: Broadcast ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Increment click count
+      tags:
+      - Broadcasts
+swagger: "2.0"

@@ -13,9 +13,9 @@ import (
 var DB *gorm.DB
 
 func ConnectDatabase() {
-	host := "localhost"
+	host := "127.0.0.1"
 	user := "postgres"
-	password := "12345" // Ganti password ini sesuai password PostgreSQL kamu!
+	password := "010307" // Ganti password ini sesuai password PostgreSQL kamu!
 	dbname := "myits_broadcast_db"
 	port := "5432"
 
