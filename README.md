@@ -1,6 +1,6 @@
-# 📢 ITS Broadcast Hub
+# 📢 myITS Broadcast
 
-**ITS Broadcast Hub** adalah platform web eksklusif bagi mahasiswa Institut Teknologi Sepuluh Nopember (ITS) yang berfungsi sebagai papan pengumuman digital terpusat. Platform ini dirancang untuk menyelesaikan masalah pencarian info kepanitiaan, lomba, dan tugas besar (tubes) yang sering kali tenggelam di grup obrolan atau kurang mendapatkan *exposure* di media sosial.
+**myITS Broadcast** adalah platform web eksklusif bagi mahasiswa Institut Teknologi Sepuluh Nopember (ITS) yang berfungsi sebagai papan pengumuman digital terpusat. Platform ini dirancang untuk menyelesaikan masalah pencarian info kepanitiaan, lomba, dan tugas besar (tubes) yang sering kali tenggelam di grup obrolan atau kurang mendapatkan *exposure* di media sosial.
 
 ---
 
